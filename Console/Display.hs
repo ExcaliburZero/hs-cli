@@ -256,20 +256,73 @@ summarySet :: Summary -> [OutputElem] -> IO ()
 summarySet (Summary backend) output = do
     backend output
 
--- | Justify position
-data Justify = JustifyLeft | JustifyRight
+-- | Justification of text.
+data Justify = JustifyLeft       -- ^ Left align text
+             | JustifyRight      -- ^ Right align text
+             | JustifyCenter     -- ^ Center text
+             | JustifyJustified  -- ^ Text fills the whole line size
 
--- | box a string to a specific size, choosing the justification
+-- | Boxes a string to a given size using the given justification.
+--
+-- ==== __Examples__
+--
+-- Basic usage:
+--
+-- >>> justify JustifyRight 35 "Lorem ipsum dolor sit amet"
+-- "Lorem ipsum dolor sit amet         "
+--
+-- >>> justify JustifyLeft 35 "Lorem ipsum dolor sit amet"
+-- "         Lorem ipsum dolor sit amet"
+--
+-- >>> justify JustifyCenter 35 "Lorem ipsum dolor sit amet"
+-- "    Lorem ipsum dolor sit amet     "
+--
+-- >>> justify JustifyJustified 35 "Lorem ipsum dolor sit amet"
+-- "Lorem    ipsum   dolor   sit   amet"
+--
+-- If the size of the given string is greater than or equal to the given boxing
+-- size, then the original string is just returned.
+--
+-- >>> justify JustifyRight 5 "Hello, World!"
+-- "Hello, World!"
 justify :: Justify -> Int -> String -> String
-justify dir sz s
-    | sz <= szS = s
-    | otherwise =
-        let pad = replicate (sz - szS) ' '
-         in case dir of
-                JustifyLeft  -> pad ++ s
-                JustifyRight -> s ++ pad
+justify justification size string
+    | size <= stringSize = string
+    | otherwise = case justification of
+      JustifyLeft      -> padding ++ string
+      JustifyRight     -> string ++ padding
+      JustifyCenter    -> if even sizeDifference
+        then halfPadding ++ string ++       halfPadding
+        else halfPadding ++ string ++ ' ' : halfPadding
+      JustifyJustified -> justifyJustified size string
   where
-    szS = length s
+    padding        = replicate sizeDifference ' '
+    halfPadding    = replicate (sizeDifference `div` 2) ' '
+    sizeDifference = size - stringSize
+    stringSize     = length string
+
+-- | Justifies the given string so that it takes up the space of the entire
+-- given box size.
+justifyJustified :: Int -> String -> String
+justifyJustified size string
+    | numberOfWords == 1 = string ++ replicate lengthDifference ' '
+    | otherwise          = justifiedString
+  where
+    justifiedString  = intercalate spaces $ insertExcessSpaces excessChars (words string)
+    spaces           = replicate spacing ' '
+    excessChars      = lengthDifference `mod` (numberOfWords - 1)
+    spacing          = lengthDifference `div` (numberOfWords - 1)
+    lengthDifference = size - wordsLength
+    wordsLength      = sum $ map length $ words string
+    numberOfWords    = length $ words string
+
+-- | Inserts excess spaces between words for the process of justifying a
+-- string.
+insertExcessSpaces :: Int -> [String] -> [String]
+insertExcessSpaces _ []     = []
+insertExcessSpaces 0 t      = t
+insertExcessSpaces n (x:xs) = (x ++ " ") : insertExcessSpaces (n - 1) xs
+
 {-
 data Attr = Attr
     { attrHasSize    :: Maybe Int
