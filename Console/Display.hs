@@ -264,7 +264,7 @@ summarySet (Summary backend) output = do
 data Justify = JustifyLeft       -- ^ Left align text
              | JustifyRight      -- ^ Right align text
              | JustifyCenter     -- ^ Center text
-             | JustifyJustified  -- ^ Text fills the whole line size
+             | JustifyJustified  -- ^ Text fills the whole line width
 
 -- | Boxes a string to a given size using the given justification.
 --
