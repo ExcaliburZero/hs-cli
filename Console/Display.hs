@@ -51,6 +51,8 @@ data OutputElem =
     | T  String
     | LeftT Int String
     | RightT Int String
+    | CenterT Int String
+    | JustifiedT Int String
     | NA
     deriving (Show,Eq)
 
@@ -83,8 +85,10 @@ renderOutput (TerminalDisplay _ term) to = mconcat $ map toTermOutput to
         toTermOutput (Fg c) = wF c
         toTermOutput (Bg c) = wB c
         toTermOutput (T t)  = termText t
-        toTermOutput (LeftT sz t)  = termText (t ++ replicate (sz - length t) ' ')
-        toTermOutput (RightT sz t)  = termText (replicate (sz - length t) ' ' ++ t)
+        toTermOutput (LeftT size t)      = termText $ justify JustifyLeft      size t
+        toTermOutput (RightT size t)     = termText $ justify JustifyRight     size t
+        toTermOutput (CenterT size t)    = termText $ justify JustifyCenter    size t
+        toTermOutput (JustifiedT size t) = termText $ justify JustifyJustified size t
         toTermOutput NA     = rD
 
 -- | A simple utility that display a @msg@ in @color@
@@ -256,13 +260,16 @@ summarySet :: Summary -> [OutputElem] -> IO ()
 summarySet (Summary backend) output = do
     backend output
 
--- | Justification of text.
+-- | A justification of text.
 data Justify = JustifyLeft       -- ^ Left align text
              | JustifyRight      -- ^ Right align text
              | JustifyCenter     -- ^ Center text
              | JustifyJustified  -- ^ Text fills the whole line size
 
 -- | Boxes a string to a given size using the given justification.
+--
+-- If the size of the given string is greater than or equal to the given boxing
+-- size, then the original string is returned.
 --
 -- ==== __Examples__
 --
@@ -280,8 +287,8 @@ data Justify = JustifyLeft       -- ^ Left align text
 -- >>> justify JustifyJustified 35 "Lorem ipsum dolor sit amet"
 -- "Lorem    ipsum   dolor   sit   amet"
 --
--- If the size of the given string is greater than or equal to the given boxing
--- size, then the original string is just returned.
+-- Attempt to box a string that is larger than the given box, yielding the
+-- original string.
 --
 -- >>> justify JustifyRight 5 "Hello, World!"
 -- "Hello, World!"
@@ -320,7 +327,7 @@ justifyJustified size string
 -- string.
 insertExcessSpaces :: Int -> [String] -> [String]
 insertExcessSpaces _ []     = []
-insertExcessSpaces 0 t      = t
+insertExcessSpaces 0 w      = w
 insertExcessSpaces n (x:xs) = (x ++ " ") : insertExcessSpaces (n - 1) xs
 
 {-
@@ -422,6 +429,8 @@ tableAppend td (Table cols rowSep) l = do
         display td [T rowSep]
     printColRow (Just (c, fieldElement)) = do
         let oe = case columnJustify c of
-                   JustifyLeft  -> RightT (columnSize c) fieldElement
-                   JustifyRight -> LeftT (columnSize c) fieldElement
+                   JustifyLeft      -> RightT     (columnSize c) fieldElement
+                   JustifyRight     -> LeftT      (columnSize c) fieldElement
+                   JustifyCenter    -> CenterT    (columnSize c) fieldElement
+                   JustifyJustified -> JustifiedT (columnSize c) fieldElement
         display td [oe,T "\n"]
