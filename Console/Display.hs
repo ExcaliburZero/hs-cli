@@ -287,18 +287,18 @@ data Justify = JustifyLeft       -- ^ Left align text
 -- >>> justify JustifyJustified 35 "Lorem ipsum dolor sit amet"
 -- "Lorem    ipsum   dolor   sit   amet"
 --
--- Attempt to box a string that is larger than the given box, yielding the
--- original string.
---
--- >>> justify JustifyRight 5 "Hello, World!"
--- "Hello, World!"
---
 -- Apply a justified justification to a one word string, resulting in a string
 -- of the given length with the word at the left followed by the remaining
 -- space.
 --
 -- >>> justify JustifyJustified 10 "Hello."
 -- "Hello.    "
+--
+-- Attempt to box a string that is larger than the given box, yielding the
+-- original string.
+--
+-- >>> justify JustifyRight 5 "Hello, World!"
+-- "Hello, World!"
 justify :: Justify -> Int -> String -> String
 justify justification size string
     | size <= stringSize = string
