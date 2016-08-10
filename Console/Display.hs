@@ -49,10 +49,10 @@ data OutputElem =
       Bg Color
     | Fg Color
     | T  String
-    | LeftT Int String
-    | RightT Int String
-    | CenterT Int String
-    | JustifiedT Int String
+    | LeftT Int String      -- ^ Left-aligned text
+    | RightT Int String     -- ^ Right-aligned text
+    | CenterT Int String    -- ^ Centered text
+    | JustifiedT Int String -- ^ Justified text
     | NA
     deriving (Show,Eq)
 
