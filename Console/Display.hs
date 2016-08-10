@@ -296,12 +296,12 @@ justify :: Justify -> Int -> String -> String
 justify justification size string
     | size <= stringSize = string
     | otherwise = case justification of
-      JustifyLeft      -> padding ++ string
-      JustifyRight     -> string ++ padding
-      JustifyCenter    -> if even sizeDifference
-        then halfPadding ++ string ++       halfPadding
-        else halfPadding ++ string ++ ' ' : halfPadding
-      JustifyJustified -> justifyJustified size string
+        JustifyLeft      -> padding ++ string
+        JustifyRight     -> string ++ padding
+        JustifyCenter    -> if even sizeDifference
+          then halfPadding ++ string ++       halfPadding
+          else halfPadding ++ string ++ ' ' : halfPadding
+        JustifyJustified -> justifyJustified size string
   where
     padding        = replicate sizeDifference ' '
     halfPadding    = replicate (sizeDifference `div` 2) ' '
